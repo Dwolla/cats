@@ -193,4 +193,10 @@ class NestedSuite extends CatsSuite {
     checkAll("Nested[Function1[Int, ?], Function0, ?]", DistributiveTests[Nested[Function1[Int, ?], Function0, ?]].distributive[Int, Int, Int, Option, Function0])
     checkAll("Distributive[Nested[Function1[Int,?], Function0, ?]]", SerializableTests.serializable(Distributive[Nested[Function1[Int,?], Function0, ?]]))
   }
+
+  test("subflatMap consistent with value.map+flatMap") {
+    forAll { (o: Nested[Option, List, Int], f: Int => List[String]) =>
+      o.subflatMap(f) should === (Nested(o.value.map(_.flatMap(f))))
+    }
+  }
 }

@@ -30,6 +30,9 @@ final case class Nested[F[_], G[_], A](value: F[G[A]]) {
   def mapK[H[_]](f: F ~> H): Nested[H, G, A] =
     Nested(f(value))
 
+  def subflatMap[B](f: A => G[B])(implicit F: Applicative[F], G: Monad[G]): Nested[F, G, B] =
+    Nested(F.map(value)(G.flatMap(_)(f)))
+
 }
 
 object Nested extends NestedInstances

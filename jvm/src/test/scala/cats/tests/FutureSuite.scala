@@ -2,6 +2,7 @@ package cats
 package jvm
 package tests
 
+import cats.data._
 import cats.kernel.laws.discipline.{MonoidTests => MonoidLawTests, SemigroupTests => SemigroupLawTests}
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
@@ -49,4 +50,13 @@ class FutureSuite extends CatsSuite {
   }
 
   checkAll("Future[Int]", MonoidLawTests[Future[Int]].monoid)
+
+  test("Nested subflatMap consistent with value.map+flatMap with outer Future") {
+    forAll { (o: Nested[Future, List, Int], f: Int => List[String]) =>
+      Await.ready(for {
+        output <- o.subflatMap(f).value
+        expected <- Nested(o.value.map(_.flatMap(f))).value
+      } yield output should === (expected), 1.second)
+    }
+  }
 }
